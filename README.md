@@ -7,16 +7,16 @@ Platform-agnostic Rust driver for the [LIS2MDL](https://www.st.com/en/mems-and-s
 
 ## Features
 
-- ✅ Blocking and async API support
-- ✅ I2C and SPI interfaces
-- ✅ Hard-iron offset calibration
-- ✅ Temperature compensation
-- ✅ Low-pass filtering
-- ✅ Self-test capability
-- ✅ Configurable output data rate (10-100 Hz)
-- ✅ High-resolution and low-power modes
-- ✅ `no_std` compatible
-- ✅ Optimized for Embassy async framework
+- Blocking and async API support
+- I2C and SPI interfaces
+- Hard-iron offset calibration
+- Temperature compensation
+- Low-pass filtering
+- Self-test capability
+- Configurable output data rate (10-100 Hz)
+- High-resolution and low-power modes
+- `no_std` compatible
+- Optimized for Embassy async framework
 
 ## Device Overview
 
