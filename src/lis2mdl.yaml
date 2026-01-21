@@ -1,0 +1,552 @@
+config:
+  default_byte_order: LE
+  buffer_address_type: u8
+  command_address_type: u8
+  register_address_type: u8
+  defmt_feature: defmt-03
+
+# Hard-iron offset registers
+OFFSET_X_REG_L:
+  type: register
+  description: X-axis hard-iron offset register (LSB)
+  address: 0x45
+  size_bits: 8
+  reset_value: 0x00
+  access: RW
+
+OFFSET_X_REG_H:
+  type: register
+  description: X-axis hard-iron offset register (MSB)
+  address: 0x46
+  size_bits: 8
+  reset_value: 0x00
+  access: RW
+
+OFFSET_Y_REG_L:
+  type: register
+  description: Y-axis hard-iron offset register (LSB)
+  address: 0x47
+  size_bits: 8
+  reset_value: 0x00
+  access: RW
+
+OFFSET_Y_REG_H:
+  type: register
+  description: Y-axis hard-iron offset register (MSB)
+  address: 0x48
+  size_bits: 8
+  reset_value: 0x00
+  access: RW
+
+OFFSET_Z_REG_L:
+  type: register
+  description: Z-axis hard-iron offset register (LSB)
+  address: 0x49
+  size_bits: 8
+  reset_value: 0x00
+  access: RW
+
+OFFSET_Z_REG_H:
+  type: register
+  description: Z-axis hard-iron offset register (MSB)
+  address: 0x4A
+  size_bits: 8
+  reset_value: 0x00
+  access: RW
+
+# Device identification
+WHO_AM_I:
+  type: register
+  description: Device identification register
+  address: 0x4F
+  size_bits: 8
+  reset_value: 0x40
+  access: RO
+
+# Configuration registers
+CFG_REG_A:
+  type: register
+  description: Configuration register A
+  address: 0x60
+  size_bits: 8
+  reset_value: 0x03
+  fields:
+    MD:
+      base: uint
+      start: 0
+      end: 2
+      access: RW
+      description: |
+        Operating mode selection.
+        00: Continuous mode
+        01: Single-shot mode
+        1X: Idle/Power-down mode
+      try_conversion:
+        name: Md
+        Continuous:
+          value: 0b00
+          description: Continuous mode
+        Single:
+          value: 0b01
+          description: Single-shot mode
+        Idle:
+          value: 0b10
+          description: Idle mode
+    ODR:
+      base: uint
+      start: 2
+      end: 4
+      access: RW
+      description: |
+        Output data rate selection.
+        00: 10 Hz
+        01: 20 Hz
+        10: 50 Hz
+        11: 100 Hz
+      try_conversion:
+        name: Odr
+        Hz10:
+          value: 0b00
+          description: 10 Hz output data rate
+        Hz20:
+          value: 0b01
+          description: 20 Hz output data rate
+        Hz50:
+          value: 0b10
+          description: 50 Hz output data rate
+        Hz100:
+          value: 0b11
+          description: 100 Hz output data rate
+    LP:
+      base: bool
+      start: 4
+      access: RW
+      description: |
+        Low-power mode enable.
+        0: High-resolution mode (default)
+        1: Low-power mode
+    SOFT_RST:
+      base: bool
+      start: 5
+      access: RW
+      description: |
+        Soft reset. Restore default values.
+        0: Default
+        1: Reset operation
+    REBOOT:
+      base: bool
+      start: 6
+      access: RW
+      description: |
+        Reboot memory content.
+        0: Normal mode
+        1: Reboot memory content
+    COMP_TEMP_EN:
+      base: bool
+      start: 7
+      access: RW
+      description: |
+        Temperature compensation enable.
+        0: Disabled
+        1: Enabled
+
+CFG_REG_B:
+  type: register
+  description: Configuration register B
+  address: 0x61
+  size_bits: 8
+  reset_value: 0x00
+  fields:
+    LPF:
+      base: bool
+      start: 0
+      access: RW
+      description: |
+        Low-pass filter enable.
+        0: Disabled (bandwidth ODR/2)
+        1: Enabled (bandwidth ODR/4)
+    OFF_CANC:
+      base: bool
+      start: 1
+      access: RW
+      description: |
+        Offset cancellation in single measurement mode enable.
+        0: Disabled
+        1: Enabled
+    SET_FREQ:
+      base: bool
+      start: 2
+      access: RW
+      description: |
+        Set pulse frequency.
+        0: Set pulse released every 63 ODR
+        1: Set pulse released at power-on
+    INT_ON_DATAOFF:
+      base: bool
+      start: 3
+      access: RW
+      description: |
+        If enabled, interrupt signal (INT bit) is driven on INT/DRDY pin.
+        Interrupt signal is active high.
+        0: Disabled
+        1: Enabled
+    OFF_CANC_ONE_SHOT:
+      base: bool
+      start: 4
+      access: RW
+      description: |
+        Enables offset cancellation in single measurement mode.
+        The offset cancellation is initiated by the set pulse.
+        0: Disabled
+        1: Enabled
+
+CFG_REG_C:
+  type: register
+  description: Configuration register C
+  address: 0x62
+  size_bits: 8
+  reset_value: 0x00
+  fields:
+    DRDY_ON_PIN:
+      base: bool
+      start: 0
+      access: RW
+      description: |
+        Data-ready signal on INT/DRDY pin.
+        0: Disabled
+        1: Enabled
+    SELF_TEST:
+      base: bool
+      start: 1
+      access: RW
+      description: |
+        Self-test enable.
+        0: Self-test disabled
+        1: Self-test enabled
+    SPI_4WIRE:
+      base: bool
+      start: 2
+      access: RW
+      description: |
+        SPI Serial Interface Mode selection.
+        0: 4-wire interface (default)
+        1: 3-wire interface
+    BLE:
+      base: bool
+      start: 3
+      access: RW
+      description: |
+        Big/Little Endian data selection.
+        0: Data LSB at lower address (default)
+        1: Data MSB at lower address
+    BDU:
+      base: bool
+      start: 4
+      access: RW
+      description: |
+        Block data update.
+        0: Continuous update
+        1: Output registers not updated until MSB and LSB have been read
+    I2C_DIS:
+      base: bool
+      start: 5
+      access: RW
+      description: |
+        I2C interface disable.
+        0: I2C enabled (default)
+        1: I2C disabled, SPI only
+    INT_ON_PIN:
+      base: bool
+      start: 6
+      access: RW
+      description: |
+        Interrupt signal on INT/DRDY pin.
+        0: Disabled
+        1: Enabled
+
+# Interrupt control register
+INT_CRTL_REG:
+  type: register
+  description: Interrupt control register
+  address: 0x63
+  size_bits: 8
+  reset_value: 0x00
+  fields:
+    IEN:
+      base: bool
+      start: 0
+      access: RW
+      description: |
+        Interrupt enable.
+        0: Interrupt disabled
+        1: Interrupt enabled
+    IEL:
+      base: bool
+      start: 1
+      access: RW
+      description: |
+        Interrupt polarity.
+        0: Active low
+        1: Active high
+    IEA:
+      base: bool
+      start: 2
+      access: RW
+      description: |
+        Interrupt pin type.
+        0: Pulsed
+        1: Latched
+    ZIEN:
+      base: bool
+      start: 5
+      access: RW
+      description: |
+        Enable interrupt generation on Z-axis.
+        0: Disabled
+        1: Enabled
+    YIEN:
+      base: bool
+      start: 6
+      access: RW
+      description: |
+        Enable interrupt generation on Y-axis.
+        0: Disabled
+        1: Enabled
+    XIEN:
+      base: bool
+      start: 7
+      access: RW
+      description: |
+        Enable interrupt generation on X-axis.
+        0: Disabled
+        1: Enabled
+
+# Interrupt source register
+INT_SOURCE_REG:
+  type: register
+  description: Interrupt source register
+  address: 0x64
+  size_bits: 8
+  reset_value: 0x00
+  access: RO
+  fields:
+    INT_ACTIVE:
+      base: bool
+      start: 0
+      access: RO
+      description: |
+        Interrupt active.
+        0: No interrupt
+        1: Interrupt active
+    MROI:
+      base: bool
+      start: 1
+      access: RO
+      description: |
+        Magnetic field value exceeds the threshold on one or more axis.
+        0: Within threshold
+        1: Exceeds threshold
+    N_TH_S_Z:
+      base: bool
+      start: 2
+      access: RO
+      description: |
+        Z-axis negative threshold.
+        0: No event
+        1: Negative threshold exceeded
+    N_TH_S_Y:
+      base: bool
+      start: 3
+      access: RO
+      description: |
+        Y-axis negative threshold.
+        0: No event
+        1: Negative threshold exceeded
+    N_TH_S_X:
+      base: bool
+      start: 4
+      access: RO
+      description: |
+        X-axis negative threshold.
+        0: No event
+        1: Negative threshold exceeded
+    P_TH_S_Z:
+      base: bool
+      start: 5
+      access: RO
+      description: |
+        Z-axis positive threshold.
+        0: No event
+        1: Positive threshold exceeded
+    P_TH_S_Y:
+      base: bool
+      start: 6
+      access: RO
+      description: |
+        Y-axis positive threshold.
+        0: No event
+        1: Positive threshold exceeded
+    P_TH_S_X:
+      base: bool
+      start: 7
+      access: RO
+      description: |
+        X-axis positive threshold.
+        0: No event
+        1: Positive threshold exceeded
+
+# Interrupt threshold registers
+INT_THS_L_REG:
+  type: register
+  description: Interrupt threshold register (LSB)
+  address: 0x65
+  size_bits: 8
+  reset_value: 0x00
+  access: RW
+
+INT_THS_H_REG:
+  type: register
+  description: Interrupt threshold register (MSB)
+  address: 0x66
+  size_bits: 8
+  reset_value: 0x00
+  access: RW
+
+# Status register
+STATUS_REG:
+  type: register
+  description: Status register
+  address: 0x67
+  size_bits: 8
+  reset_value: 0x00
+  access: RO
+  fields:
+    XDA:
+      base: bool
+      start: 0
+      access: RO
+      description: |
+        X-axis new data available.
+        0: No new data
+        1: New data available
+    YDA:
+      base: bool
+      start: 1
+      access: RO
+      description: |
+        Y-axis new data available.
+        0: No new data
+        1: New data available
+    ZDA:
+      base: bool
+      start: 2
+      access: RO
+      description: |
+        Z-axis new data available.
+        0: No new data
+        1: New data available
+    ZYXDA:
+      base: bool
+      start: 3
+      access: RO
+      description: |
+        X, Y, and Z-axis new data available.
+        0: No new data
+        1: New data available on all axes
+    XOR:
+      base: bool
+      start: 4
+      access: RO
+      description: |
+        X-axis data overrun.
+        0: No overrun
+        1: Data overrun
+    YOR:
+      base: bool
+      start: 5
+      access: RO
+      description: |
+        Y-axis data overrun.
+        0: No overrun
+        1: Data overrun
+    ZOR:
+      base: bool
+      start: 6
+      access: RO
+      description: |
+        Z-axis data overrun.
+        0: No overrun
+        1: Data overrun
+    ZYXOR:
+      base: bool
+      start: 7
+      access: RO
+      description: |
+        X, Y, and Z-axis data overrun.
+        0: No overrun
+        1: Data overrun on one or more axes
+
+# Output registers
+OUTX_L_REG:
+  type: register
+  description: X-axis magnetic field data (LSB)
+  address: 0x68
+  size_bits: 8
+  access: RO
+
+OUTX_H_REG:
+  type: register
+  description: X-axis magnetic field data (MSB)
+  address: 0x69
+  size_bits: 8
+  access: RO
+
+OUTY_L_REG:
+  type: register
+  description: Y-axis magnetic field data (LSB)
+  address: 0x6A
+  size_bits: 8
+  access: RO
+
+OUTY_H_REG:
+  type: register
+  description: Y-axis magnetic field data (MSB)
+  address: 0x6B
+  size_bits: 8
+  access: RO
+
+OUTZ_L_REG:
+  type: register
+  description: Z-axis magnetic field data (LSB)
+  address: 0x6C
+  size_bits: 8
+  access: RO
+
+OUTZ_H_REG:
+  type: register
+  description: Z-axis magnetic field data (MSB)
+  address: 0x6D
+  size_bits: 8
+  access: RO
+
+# Temperature output registers
+TEMP_OUT_L_REG:
+  type: register
+  description: Temperature data (LSB)
+  address: 0x6E
+  size_bits: 8
+  access: RO
+
+TEMP_OUT_H_REG:
+  type: register
+  description: Temperature data (MSB)
+  address: 0x6F
+  size_bits: 8
+  access: RO
+
+# Buffer for efficient multi-byte reads
+MAG_DATA_READ:
+  type: buffer
+  description: Magnetic field data buffer (6 bytes, X/Y/Z LSB/MSB)
+  address: 0x68
+  access: RO
